@@ -267,4 +267,66 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                           child: GestureDetector(
                             onTap: () => _removeImage(index),
                             child: Container(
-      
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  if (_selectedImages.length < 3)
+                    GestureDetector(
+                      onTap: _pickImages,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_photo_alternate_outlined, size: 40),
+                            SizedBox(height: 4),
+                            Text('Add Image'),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              
+              // Submit button
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitJob,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: Text(_isSubmitting ? 'Posting Job...' : 'Post Job'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _budgetController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
+}

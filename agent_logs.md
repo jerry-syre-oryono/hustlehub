@@ -4,6 +4,38 @@ This file maintains a persistent, structured log of all actions taken by the Gem
 
 ---
 
+## 2026-05-25 17:15:00
+
+**Type:** refactor
+
+**Files Affected:**
+- lib/core/services/storage_service.dart
+- lib/features/jobs/data/repositories/job_repository_impl.dart
+- lib/core/utils/image_picker_utils.dart
+- lib/core/utils/image_utils.dart
+- lib/core/services/appwrite_service.dart
+- lib/features/jobs/presentation/screens/post_job_screen.dart
+
+**Description:**
+Refactored the storage system to use a "Single-Bucket" solution with metadata tracking.
+
+**Changes Made:**
+- Updated `StorageService` to handle all file types in a single bucket (`hustlehub-storage`) and implemented metadata tracking via the `file_metadata` collection.
+- Refactored `JobRepositoryImpl` to integrate with the new `StorageService` for image uploads.
+- Created `ImagePickerUtils` for standardized image picking and preparation.
+- Refined `ImageUtils` with advanced compression logic and aspect-ratio preserving resizing.
+- Simplified `AppwriteService` to remove redundant constants and improve session restoration logic.
+- Updated `PostJobScreen` to utilize `ImagePickerUtils` and provide improved user feedback during the upload process.
+
+**Errors Encountered (if any):**
+- Minor inconsistencies in `Job` model properties (nullability and default values).
+
+**Fix Applied (if any):**
+- Standardized `Job` property access and null-safety in `JobRepositoryImpl`.
+
+**Result:**
+- Success
+
 ## 2026-05-25 16:40:00
 
 **Type:** feature
