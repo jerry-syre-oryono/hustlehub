@@ -7,9 +7,11 @@ import 'package:image/image.dart' as img;
 
 class StorageService {
   static final Storage _storage = AppwriteService.storage;
-  static const String bucketId = 'hustlehub-storage';
   
-  // File type constants
+  // ✅ Using existing bucket name
+  static const String bucketId = 'job-images';
+  
+  // File type constants (for organization within the bucket)
   static const String typeJobImage = 'jobs';
   static const String typeGigImage = 'gigs';
   static const String typeUserAvatar = 'avatars';
@@ -23,15 +25,18 @@ class StorageService {
     typeVerification: 5 * 1024 * 1024,  // 5MB
   };
   
-  static Future<void> init() async {
-    // Service initialization logic if needed
-  }
+  static Future<void> init() async {}
 
-  /// Generate file path for organized storage
+  /// Generate file path for organized storage (virtual folders)
   static String _generateFilePath(String type, String ownerId, String fileName) {
     return '$type/$ownerId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
   }
   
+  /// Helper to construct the file view URL for Appwrite Flutter SDK
+  static String _getFileUrl(String fileId) {
+    return '${AppwriteService.endpoint}/storage/buckets/$bucketId/files/$fileId/view?project=${AppwriteService.projectId}';
+  }
+
   /// Upload file with type validation
   static Future<String> uploadFile({
     required String filePath,
@@ -56,27 +61,25 @@ class StorageService {
       }
       
       final fileName = customFileName ?? filePath.split('/').last;
-      final fileId = _generateFilePath(type, ownerId, fileName);
+      final virtualPath = _generateFilePath(type, ownerId, fileName);
       
+      // Note: In Appwrite 13.x Flutter SDK, createFile uses InputFile
       final result = await _storage.createFile(
         bucketId: bucketId,
         fileId: ID.unique(),
         file: InputFile.fromPath(path: uploadPath),
       );
       
-      // Store metadata in a separate collection for tracking
+      // Store metadata in database for tracking
       await _storeFileMetadata(
         fileId: result.$id,
-        filePath: fileId,
+        filePath: virtualPath,
         type: type,
         ownerId: ownerId,
         size: fileSize,
       );
       
-      return _storage.getFileView(
-        bucketId: bucketId,
-        fileId: result.$id,
-      ).toString();
+      return _getFileUrl(result.$id);
     } catch (e) {
       throw Exception('Failed to upload file: $e');
     }
@@ -219,13 +222,10 @@ class StorageService {
   
   /// Get file URL
   static String getFileUrl(String fileId) {
-    return _storage.getFileView(
-      bucketId: bucketId,
-      fileId: fileId,
-    ).toString();
+    return _getFileUrl(fileId);
   }
   
-  /// Specific upload methods for convenience
+  // Convenience methods for different file types
   static Future<String> uploadJobImage(String jobId, String imagePath) async {
     return await uploadFile(
       filePath: imagePath,

@@ -4,6 +4,105 @@ This file maintains a persistent, structured log of all actions taken by the Gem
 
 ---
 
+## 2026-05-25 18:35:00
+
+**Type:** feature
+
+**Files Affected:**
+- lib/features/search/domain/services/search_service.dart
+- lib/features/search/presentation/widgets/search_filter_bar.dart
+- lib/features/search/presentation/widgets/job_search_card.dart
+- lib/features/search/presentation/widgets/gig_search_card.dart
+- lib/features/search/presentation/screens/search_screen.dart
+- lib/shared/widgets/job_card.dart
+- lib/shared/widgets/gig_card.dart
+- lib/features/home/presentation/screens/home_screen.dart
+
+**Description:**
+Implemented the Search & Discovery system, core UI widgets, and the Home Screen feed.
+
+**Changes Made:**
+- Developed `SearchService` with advanced filtering (category, budget, distance) and sorting (urgent, distance, recency, and trending scores).
+- Created reusable and animated UI components: `JobCard` and `GigCard`, including caching for network images.
+- Built a comprehensive `SearchScreen` with textual search, tabbed results (Jobs vs Gigs), and a dedicated `SearchFilterBar`.
+- Fully implemented the `HomeScreen` featuring a `BottomNavigationBar` and a dynamic `FeedScreen` that displays trending gigs and recent jobs using Riverpod providers.
+- Integrated `searchJobsProvider` and `searchGigsProvider` using the `family` modifier for parameterized search state.
+- Added support for "Time Ago" formatting and currency localization in cards.
+
+**Errors Encountered (if any):**
+- Some provided snippets were missing provider definitions or referenced non-existent widgets (e.g., `SearchFilterBar`).
+
+**Fix Applied (if any):**
+- Manually designed and implemented the missing `SearchFilterBar`, `JobSearchCard`, and `GigSearchCard` widgets.
+- Corrected provider definitions to align with the `StateNotifier` controllers implemented in previous steps.
+
+**Result:**
+- Success
+
+## 2026-05-25 18:05:00
+
+**Type:** feature
+
+**Files Affected:**
+- lib/features/gigs/domain/entities/gig.dart
+- lib/features/gigs/domain/repositories/gig_repository.dart
+- lib/features/gigs/domain/usecases/create_gig_usecase.dart
+- lib/features/gigs/domain/usecases/get_gigs_usecase.dart
+- lib/features/gigs/data/datasources/gig_remote_datasource.dart
+- lib/features/gigs/data/repositories/gig_repository_impl.dart
+- lib/features/gigs/presentation/controllers/gig_controller.dart
+- lib/features/gigs/presentation/screens/post_gig_screen.dart
+
+**Description:**
+Implemented the Gigs System for worker services.
+
+**Changes Made:**
+- Defined the `Gig` entity with properties for pricing, delivery time, and portfolio management.
+- Created `CreateGigUseCase` and `GetGigsUseCase` with comprehensive validation.
+- Implemented `GigRemoteDataSource` (Appwrite) and `GigRepositoryImpl` with Hive-based caching.
+- Developed `GigController` using Riverpod to manage gig creation and fetching.
+- Built `PostGigScreen` for workers to publish services, featuring multi-image portfolio selection, compression, and category-based organization.
+- Fixed several minor issues in provided snippets, such as missing null-checks for numeric values and ensuring consistent use of `InputFile` for storage.
+
+**Errors Encountered (if any):**
+- Provided code for `PostGigScreen` had minor syntax errors (missing `const` and `final` in some places).
+- Caching logic needed refinement to ensure type safety with Hive.
+
+**Fix Applied (if any):**
+- Manually audited and corrected code during implementation.
+- Standardized Hive cache retrieval using `List<Gig>.from` to prevent runtime type errors.
+
+**Result:**
+- Success
+
+## 2026-05-25 17:35:00
+
+**Type:** refactor
+
+**Files Affected:**
+- lib/core/services/storage_service.dart
+- lib/features/jobs/data/repositories/job_repository_impl.dart
+- lib/core/services/appwrite_service.dart
+
+**Description:**
+Finalized the Unified Storage System using the user's existing `job-images` bucket.
+
+**Changes Made:**
+- Updated `bucketId` in `StorageService` to `job-images`.
+- Refined `StorageService` to correctly construct file view URLs for the Appwrite Flutter SDK (which returns bytes via `getFileView`).
+- Ensured `InputFile.fromPath` is used for Appwrite 13.x compatibility.
+- Updated `JobRepositoryImpl` with enhanced caching keys (`my_jobs`, `jobs_feed`) and robust null-safety for document data.
+- Improved `AppwriteService` session restoration with error handling for invalid sessions.
+
+**Errors Encountered (if any):**
+- Provided code used `File.fromPath` and direct `getFileView` return values which are incompatible with the intended URL-based storage in Appwrite 13.x Flutter SDK.
+
+**Fix Applied (if any):**
+- Manually corrected `InputFile` usage and implemented explicit URL construction in `StorageService`.
+
+**Result:**
+- Success
+
 ## 2026-05-25 17:15:00
 
 **Type:** refactor

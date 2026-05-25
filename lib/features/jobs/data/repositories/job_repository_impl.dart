@@ -43,7 +43,7 @@ class JobRepositoryImpl implements JobRepository {
       final jobDoc = await remoteDataSource.createJob(jobData);
       
       final job = Job(
-        id: jobDoc['$id'],
+        id: jobDoc['\$id'],
         clientId: jobDoc['clientId'] ?? '',
         clientName: '',
         clientAvatar: '',
@@ -91,7 +91,7 @@ class JobRepositoryImpl implements JobRepository {
       );
       
       final jobs = jobsData.map((data) => Job(
-        id: data['$id'],
+        id: data['\$id'],
         clientId: data['clientId'] ?? '',
         clientName: data['clientName'] ?? '',
         clientAvatar: data['clientAvatar'] ?? '',
@@ -127,7 +127,7 @@ class JobRepositoryImpl implements JobRepository {
     try {
       final jobData = await remoteDataSource.getJob(jobId);
       final job = Job(
-        id: jobData['$id'],
+        id: jobData['\$id'],
         clientId: jobData['clientId'] ?? '',
         clientName: jobData['clientName'] ?? '',
         clientAvatar: jobData['clientAvatar'] ?? '',
@@ -166,8 +166,7 @@ class JobRepositoryImpl implements JobRepository {
       await jobResult.fold(
         (failure) async => throw Exception('Job not found'),
         (job) async {
-          // Delete associated images from storage if needed
-          // Note: Extraction logic for fileId from URL would be required here
+          // Associated images deletion logic would go here
         },
       );
       
@@ -190,7 +189,6 @@ class JobRepositoryImpl implements JobRepository {
       // Update cache
       final cachedJob = _jobsCache.get('job_$jobId');
       if (cachedJob != null) {
-        // In a real scenario, you'd merge the data
         await _jobsCache.put('job_$jobId', cachedJob);
       }
       
