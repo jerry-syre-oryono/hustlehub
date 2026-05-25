@@ -1,0 +1,161 @@
+// lib/features/auth/data/repositories/auth_repository_impl.dart
+import 'package:dartz/dartz.dart';
+import 'package:hive/hive.dart';
+import 'package:hustlehub/core/errors/failures.dart';
+import 'package:hustlehub/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:hustlehub/features/auth/domain/entities/user.dart';
+import 'package:hustlehub/features/auth/domain/repositories/auth_repository.dart';
+
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource remoteDataSource;
+  final Box _userCache;
+  
+  AuthRepositoryImpl(this.remoteDataSource, this._userCache);
+  
+  @override
+  Future<Either<Failure, User>> login(String email, String password) async {
+    try {
+      final userData = await remoteDataSource.login(email, password);
+      final user = User(
+        id: userData['userId'],
+        email: userData['email'],
+        name: userData['name'],
+        role: userData['role'],
+        isVerified: userData['verified'] ?? false,
+        rating: (userData['rating'] ?? 0.0).toDouble(),
+        totalJobs: userData['totalJobs'] ?? 0,
+        totalGigs: userData['totalGigs'] ?? 0,
+        avatarUrl: userData['avatarUrl'],
+        isBanned: userData['isBanned'] ?? false,
+        createdAt: DateTime.parse(userData['createdAt']),
+      );
+      
+      // Cache user
+      await _userCache.put('current_user', user.toJson());
+      
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, User>> register(
+    String email,
+    String password,
+    String name,
+    String role,
+  ) async {
+    try {
+      final userData = await remoteDataSource.register(email, password, name, role);
+      final user = User(
+        id: userData['userId'],
+        email: userData['email'],
+        name: userData['name'],
+        role: userData['role'],
+        isVerified: false,
+        rating: 0.0,
+        totalJobs: 0,
+        totalGigs: 0,
+        isBanned: false,
+        createdAt: DateTime.now(),
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, void>> logout() async {
+    try {
+      await remoteDataSource.logout();
+      await _userCache.delete('current_user');
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, User>> getCurrentUser() async {
+    try {
+      // Check cache first
+      final cachedUser = _userCache.get('current_user');
+      if (cachedUser != null) {
+        return Right(UserJson.fromJson(Map<String, dynamic>.from(cachedUser)));
+      }
+      
+      final userData = await remoteDataSource.getCurrentUser();
+      final user = User(
+        id: userData['userId'],
+        email: userData['email'],
+        name: userData['name'],
+        role: userData['role'],
+        isVerified: userData['verified'] ?? false,
+        rating: (userData['rating'] ?? 0.0).toDouble(),
+        totalJobs: userData['totalJobs'] ?? 0,
+        totalGigs: userData['totalGigs'] ?? 0,
+        avatarUrl: userData['avatarUrl'],
+        isBanned: userData['isBanned'] ?? false,
+        createdAt: DateTime.parse(userData['createdAt']),
+      );
+      
+      await _userCache.put('current_user', user.toJson());
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, bool>> verifyEmail(String userId, String secret) async {
+    try {
+      await remoteDataSource.verifyEmail(userId, secret);
+      return const Right(true);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, void>> resetPassword(String email) async {
+    try {
+      await remoteDataSource.resetPassword(email);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+
+// Extension methods for JSON conversion
+extension UserJson on User {
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'email': email,
+    'name': name,
+    'role': role,
+    'isVerified': isVerified,
+    'rating': rating,
+    'totalJobs': totalJobs,
+    'totalGigs': totalGigs,
+    'avatarUrl': avatarUrl,
+    'isBanned': isBanned,
+    'createdAt': createdAt.toIso8601String(),
+  };
+  
+  static User fromJson(Map<String, dynamic> json) => User(
+    id: json['id'],
+    email: json['email'],
+    name: json['name'],
+    role: json['role'],
+    isVerified: json['isVerified'],
+    rating: json['rating'],
+    totalJobs: json['totalJobs'],
+    totalGigs: json['totalGigs'],
+    avatarUrl: json['avatarUrl'],
+    isBanned: json['isBanned'],
+    createdAt: DateTime.parse(json['createdAt']),
+  );
+}
