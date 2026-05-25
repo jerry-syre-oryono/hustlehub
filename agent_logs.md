@@ -4,6 +4,34 @@ This file maintains a persistent, structured log of all actions taken by the Gem
 
 ---
 
+## 2026-05-25 18:55:00
+
+**Type:** fix
+
+**Files Affected:**
+- pubspec.yaml
+- android/settings.gradle.kts
+- android/app/build.gradle.kts
+
+**Description:**
+Resolved Android build failure caused by plugin compatibility issues.
+
+**Changes Made:**
+- Updated `appwrite` to `^24.2.0` in `pubspec.yaml`. This resolved the `Unresolved reference 'Registrar'` error in `flutter_web_auth_2` by upgrading it to version `5.0.2`.
+- Updated Android Gradle Plugin (AGP) to `8.9.1` and Kotlin to `2.1.0` in `android/settings.gradle.kts` to meet the strict requirements of modern Flutter plugins (e.g., `device_info_plus`, `geolocator_android`).
+- Bumped `compileSdk` and `targetSdk` to `36` in `android/app/build.gradle.kts` as explicitly required by the updated dependency graph.
+- Verified the fix with a successful `flutter build apk --debug`.
+
+**Errors Encountered (if any):**
+- `Unresolved reference 'Registrar'` in `flutter_web_auth_2:3.1.2`.
+- Multiple "requires Android SDK version 36 or higher" warnings/errors during the build check phase.
+
+**Fix Applied (if any):**
+- System-wide version alignment (SDK, AGP, Kotlin, and dependencies).
+
+**Result:**
+- Success
+
 ## 2026-05-25 18:35:00
 
 **Type:** feature

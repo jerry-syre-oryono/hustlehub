@@ -6,8 +6,6 @@ class SearchFilterBar extends StatelessWidget {
   final Function(String?) onCategoryChanged;
   final double? maxBudget;
   final Function(double?) onMaxBudgetChanged;
-  final bool nearbyOnly;
-  final Function(bool) onNearbyChanged;
 
   const SearchFilterBar({
     super.key,
@@ -15,8 +13,6 @@ class SearchFilterBar extends StatelessWidget {
     required this.onCategoryChanged,
     this.maxBudget,
     required this.onMaxBudgetChanged,
-    required this.nearbyOnly,
-    required this.onNearbyChanged,
   });
 
   @override
@@ -40,12 +36,6 @@ class SearchFilterBar extends StatelessWidget {
             onSelected: (_) {
               // Show budget picker
             },
-          ),
-          const SizedBox(width: 8),
-          FilterChip(
-            label: const Text('Nearby'),
-            selected: nearbyOnly,
-            onSelected: onNearbyChanged,
           ),
         ],
       ),

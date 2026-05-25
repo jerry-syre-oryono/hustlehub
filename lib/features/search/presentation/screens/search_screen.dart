@@ -18,7 +18,6 @@ final searchJobsProvider = FutureProvider.family<List<Job>, SearchParams>((ref, 
     query: params.query,
     category: params.category,
     maxBudget: params.maxBudget,
-    nearbyOnly: params.nearbyOnly,
   );
 });
 
@@ -39,7 +38,6 @@ class SearchParams {
   final double? maxBudget;
   final double? maxPrice;
   final double? minRating;
-  final bool nearbyOnly;
 
   SearchParams({
     this.query = '',
@@ -47,7 +45,6 @@ class SearchParams {
     this.maxBudget,
     this.maxPrice,
     this.minRating,
-    this.nearbyOnly = false,
   });
 
   @override
@@ -59,8 +56,7 @@ class SearchParams {
           category == other.category &&
           maxBudget == other.maxBudget &&
           maxPrice == other.maxPrice &&
-          minRating == other.minRating &&
-          nearbyOnly == other.nearbyOnly;
+          minRating == other.minRating;
 
   @override
   int get hashCode =>
@@ -68,8 +64,7 @@ class SearchParams {
       category.hashCode ^
       maxBudget.hashCode ^
       maxPrice.hashCode ^
-      minRating.hashCode ^
-      nearbyOnly.hashCode;
+      minRating.hashCode;
 }
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -89,7 +84,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   double? _maxBudget;
   double? _maxPrice;
   double? _minRating;
-  bool _nearbyOnly = false;
   
   @override
   Widget build(BuildContext context) {
@@ -165,12 +159,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 _maxBudget = budget;
               });
             },
-            nearbyOnly: _nearbyOnly,
-            onNearbyChanged: (value) {
-              setState(() {
-                _nearbyOnly = value;
-              });
-            },
           ),
           
           const Divider(),
@@ -191,7 +179,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       query: _searchQuery,
       category: _selectedCategory,
       maxBudget: _maxBudget,
-      nearbyOnly: _nearbyOnly,
     );
     
     final jobsAsync = ref.watch(searchJobsProvider(params));
@@ -272,27 +259,5 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-}
-
-// Add SearchService.searchJobs support for nearbyOnly
-extension SearchServiceExt on SearchService {
-  static List<Job> searchJobs({
-    required List<Job> jobs,
-    required String query,
-    String? category,
-    double? maxBudget,
-    bool nearbyOnly = false,
-  }) {
-    // In a real app, nearbyOnly would use geolocator to get current pos
-    // For now we filter by query, category and budget
-    return jobs.where((job) {
-      final matchesQuery = query.isEmpty || 
-          job.title.toLowerCase().contains(query.toLowerCase()) ||
-          job.description.toLowerCase().contains(query.toLowerCase());
-      final matchesCategory = category == null || job.category == category;
-      final matchesBudget = maxBudget == null || job.budget <= maxBudget;
-      return matchesQuery && matchesCategory && matchesBudget;
-    }).toList();
   }
 }

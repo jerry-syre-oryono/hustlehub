@@ -1,5 +1,4 @@
 // lib/app/router/app_router.dart
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hustlehub/features/auth/presentation/screens/login_screen.dart';
 import 'package:hustlehub/features/auth/presentation/screens/register_screen.dart';
