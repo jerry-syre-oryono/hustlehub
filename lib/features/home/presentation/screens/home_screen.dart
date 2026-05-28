@@ -7,6 +7,9 @@ import 'package:hustlehub/features/search/domain/services/search_service.dart';
 import 'package:hustlehub/features/search/presentation/screens/search_screen.dart';
 import 'package:hustlehub/features/jobs/presentation/controllers/job_controller.dart';
 import 'package:hustlehub/features/gigs/presentation/controllers/gig_controller.dart';
+import 'package:hustlehub/features/jobs/presentation/screens/post_job_screen.dart';
+import 'package:hustlehub/features/gigs/presentation/screens/post_gig_screen.dart';
+import 'package:hustlehub/features/profile/presentation/screens/profile_screen.dart';
 import 'package:hustlehub/shared/widgets/job_card.dart';
 import 'package:hustlehub/shared/widgets/gig_card.dart';
 
@@ -23,9 +26,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<Widget> _pages = [
     const FeedScreen(),
     const SearchScreen(),
-    const Scaffold(body: Center(child: Text('Post'))),
-    const Scaffold(body: Center(child: Text('Inbox'))),
-    const Scaffold(body: Center(child: Text('Profile'))),
+    const PostSelectionScreen(),
+    const InboxScreen(),
+    const ProfileScreen(),
   ];
   
   @override
@@ -239,13 +242,269 @@ class FeedScreen extends ConsumerWidget {
   }
 }
 
-// Providers
-final recentJobsProvider = Provider<List<Job>>((ref) {
-  final jobs = ref.watch(jobControllerProvider).jobs;
-  return jobs.take(10).toList();
+// Post Selection Screen
+class PostSelectionScreen extends ConsumerWidget {
+  const PostSelectionScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text('What would you like to post?', style: theme.textTheme.titleLarge),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                // Post Job Card
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PostJobScreen()),
+                      );
+                    },
+                    child: Container(
+                      height: 380,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.work_rounded, color: Colors.blue, size: 40),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Post a Job',
+                            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Hire freelancers for your project',
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildFeatureBullet(context, 'Get bids from pros', colorScheme.primary),
+                                const SizedBox(height: 8),
+                                _buildFeatureBullet(context, 'Secure payments', colorScheme.primary),
+                                const SizedBox(height: 8),
+                                _buildFeatureBullet(context, 'No upfront cost', colorScheme.primary),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Get Started',
+                                style: theme.textTheme.labelLarge?.copyWith(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn().slideY(begin: -0.1),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Post Gig Card
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PostGigScreen()),
+                      );
+                    },
+                    child: Container(
+                      height: 380,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.bolt_rounded, color: Colors.purple, size: 40),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Post a Gig',
+                            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Offer your services to the community',
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildFeatureBullet(context, 'Flexible schedule', Colors.purple),
+                                const SizedBox(height: 8),
+                                _buildFeatureBullet(context, 'Instant bookings', Colors.purple),
+                                const SizedBox(height: 8),
+                                _buildFeatureBullet(context, 'Earn instantly', Colors.purple),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Get Started',
+                                style: theme.textTheme.labelLarge?.copyWith(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureBullet(BuildContext context, String text, Color bulletColor) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          margin: const EdgeInsets.only(top: 8, right: 10),
+          decoration: BoxDecoration(
+            color: bulletColor,
+            shape: BoxShape.circle,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Inbox Screen
+class InboxScreen extends ConsumerWidget {
+  const InboxScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text('Messages', style: theme.textTheme.titleLarge),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.mail_outline_rounded,
+                size: 48,
+                color: colorScheme.onSurface.withOpacity(0.4),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No messages yet',
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your messages will appear here',
+              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Providers  
+final recentJobsProvider = Provider((ref) {
+  final controller = ref.watch(jobControllerProvider);
+  return controller.jobs.take(10).toList();
 });
 
-final trendingGigsProvider = Provider<List<Gig>>((ref) {
-  final gigs = ref.watch(gigControllerProvider).gigs;
-  return SearchService.getTrendingGigs(gigs);
+final trendingGigsProvider = Provider((ref) {
+  final controller = ref.watch(gigControllerProvider);
+  return SearchService.getTrendingGigs(controller.gigs);
 });

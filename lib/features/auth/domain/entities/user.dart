@@ -13,6 +13,9 @@ class User extends Equatable {
   final String? avatarUrl;
   final bool isBanned;
   final DateTime createdAt;
+  final String? bio;
+  final String? phone;
+  final String? location;
   
   const User({
     required this.id,
@@ -26,6 +29,9 @@ class User extends Equatable {
     this.avatarUrl,
     required this.isBanned,
     required this.createdAt,
+    this.bio,
+    this.phone,
+    this.location,
   });
   
   bool get canPostJobs => role == 'client' || role == 'admin';
@@ -34,6 +40,6 @@ class User extends Equatable {
   
   @override
   List<Object?> get props => [
-    id, email, name, role, isVerified, rating, totalJobs, totalGigs, avatarUrl, isBanned, createdAt
+    id, email, name, role, isVerified, rating, totalJobs, totalGigs, avatarUrl, isBanned, createdAt, bio, phone, location
   ];
 }

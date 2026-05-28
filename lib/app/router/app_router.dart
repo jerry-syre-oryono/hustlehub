@@ -1,5 +1,6 @@
 // lib/app/router/app_router.dart
 import 'package:go_router/go_router.dart';
+import 'package:hustlehub/features/auth/presentation/screens/splash_screen.dart';
 import 'package:hustlehub/features/auth/presentation/screens/login_screen.dart';
 import 'package:hustlehub/features/auth/presentation/screens/register_screen.dart';
 import 'package:hustlehub/features/home/presentation/screens/home_screen.dart';
@@ -10,8 +11,13 @@ import 'package:hustlehub/features/admin/presentation/screens/admin_dashboard_sc
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: '/auth/login',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/auth/login',
         name: 'login',
