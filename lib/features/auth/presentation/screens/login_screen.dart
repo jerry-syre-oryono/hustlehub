@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -37,7 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+          SnackBar(content: Text(failure.message), backgroundColor: Theme.of(context).colorScheme.error),
         );
       },
       (user) {
@@ -56,48 +55,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 80),
                 // Logo
-                Icon(
-                  Icons.work_outline,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
-                ).animate().fadeIn().scale(),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Icon(
+                      Icons.work_rounded,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ).animate().fadeIn(duration: 600.ms).scale(delay: 200.ms),
+                ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 
                 Text(
-                  'Welcome Back',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Welcome back',
+                  style: Theme.of(context).textTheme.displayLarge,
                   textAlign: TextAlign.center,
-                ).animate().fadeIn(delay: 100.ms),
+                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, curve: Curves.easeOutQuad),
                 
                 const SizedBox(height: 8),
                 
                 Text(
-                  'Sign in to continue',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey,
-                  ),
+                  'Enter your details to sign in',
+                  style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
-                ).animate().fadeIn(delay: 200.ms),
+                ).animate().fadeIn(delay: 400.ms),
                 
                 const SizedBox(height: 48),
                 
                 // Email field
                 AuthTextField(
                   controller: _emailController,
-                  label: 'Email',
+                  label: 'Email address',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -105,9 +110,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (!value.contains('@')) return 'Invalid email';
                     return null;
                   },
-                ).animate().fadeIn(delay: 300.ms),
+                ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.1),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 
                 // Password field
                 AuthTextField(
@@ -116,7 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (value) {
@@ -124,30 +129,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (value.length < 6) return 'Password must be at least 6 characters';
                     return null;
                   },
-                ).animate().fadeIn(delay: 400.ms),
+                ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.1),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+                
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Forgot password?',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 700.ms),
+                
+                const SizedBox(height: 32),
                 
                 // Login button
                 AuthButton(
-                  text: _isLoading ? 'Signing in...' : 'Sign In',
+                  text: _isLoading ? 'Signing in...' : 'Sign in',
                   onPressed: _handleLogin,
                   isLoading: _isLoading,
-                ).animate().fadeIn(delay: 500.ms),
+                ).animate().fadeIn(delay: 800.ms).scale(begin: const Offset(0.95, 0.95)),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 
                 // Register link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account? "),
+                    Text(
+                      "Don't have an account? ",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     TextButton(
                       onPressed: () => context.push('/auth/register'),
-                      child: const Text('Sign Up'),
+                      child: Text(
+                        'Sign up',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
-                ).animate().fadeIn(delay: 600.ms),
+                ).animate().fadeIn(delay: 900.ms),
               ],
             ),
           ),

@@ -1,11 +1,12 @@
-// lib/features/auth/presentation/screens/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hustlehub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hustlehub/features/auth/presentation/widgets/auth_button.dart';
 import 'package:hustlehub/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:hustlehub/shared/enums/user_role.dart';
+import 'package:hustlehub/app/theme/app_colors.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -29,7 +30,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match'), backgroundColor: Colors.red),
+        SnackBar(content: const Text('Passwords do not match'), backgroundColor: Theme.of(context).colorScheme.error),
       );
       return;
     }
@@ -49,17 +50,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+          SnackBar(content: Text(failure.message), backgroundColor: Theme.of(context).colorScheme.error),
         );
       },
       (user) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration successful! Please verify your email.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.go('/auth/login');
+        context.go('/home');
       },
     );
   }
@@ -76,62 +71,54 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        backgroundColor: Colors.transparent,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
-                
-                Icon(
-                  Icons.person_add_outlined,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
-                ),
-                
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 Text(
-                  'Create Account',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                  'Join HustleHub',
+                  style: Theme.of(context).textTheme.displayLarge,
+                ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.1),
                 
                 const SizedBox(height: 8),
                 
                 Text(
-                  'Join HustleHub today',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                  'Create an account to start your hustle',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ).animate().fadeIn(delay: 200.ms),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: 40),
                 
-                // Name field
                 AuthTextField(
                   controller: _nameController,
-                  label: 'Full Name',
-                  prefixIcon: Icons.person_outline,
+                  label: 'Full name',
+                  prefixIcon: Icons.person_outline_rounded,
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Name required';
                     if (value.length < 2) return 'Name too short';
                     return null;
                   },
-                ),
+                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
                 
                 const SizedBox(height: 16),
                 
-                // Email field
                 AuthTextField(
                   controller: _emailController,
-                  label: 'Email',
+                  label: 'Email address',
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -139,102 +126,147 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     if (!value.contains('@')) return 'Invalid email';
                     return null;
                   },
-                ),
+                ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
                 
                 const SizedBox(height: 16),
                 
-                // Password field
                 AuthTextField(
                   controller: _passwordController,
                   label: 'Password',
-                  prefixIcon: Icons.lock_outline,
+                  prefixIcon: Icons.lock_outline_rounded,
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Password required';
-                    if (value.length < 6) return 'Password must be at least 6 characters';
+                    if (value.length < 6) return 'Password too short';
                     return null;
                   },
-                ),
+                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
                 
                 const SizedBox(height: 16),
                 
-                // Confirm password field
                 AuthTextField(
                   controller: _confirmPasswordController,
-                  label: 'Confirm Password',
-                  prefixIcon: Icons.lock_outline,
+                  label: 'Confirm password',
+                  prefixIcon: Icons.lock_outline_rounded,
                   obscureText: _obscureConfirmPassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                     onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Please confirm password';
                     return null;
                   },
-                ),
+                ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 
-                // Role selection
                 Text(
                   'I want to:',
                   style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
+                ).animate().fadeIn(delay: 700.ms),
+                
+                const SizedBox(height: 12),
+                
                 Row(
                   children: [
                     Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Find Work'),
-                        selected: _selectedRole == UserRole.worker,
-                        onSelected: (selected) {
-                          if (selected) setState(() => _selectedRole = UserRole.worker);
-                        },
+                      child: _RoleCard(
+                        title: 'Find Work',
+                        icon: Icons.search_rounded,
+                        isSelected: _selectedRole == UserRole.worker,
+                        onTap: () => setState(() => _selectedRole = UserRole.worker),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Hire Workers'),
-                        selected: _selectedRole == UserRole.client,
-                        onSelected: (selected) {
-                          if (selected) setState(() => _selectedRole = UserRole.client);
-                        },
+                      child: _RoleCard(
+                        title: 'Hire Workers',
+                        icon: Icons.group_add_rounded,
+                        isSelected: _selectedRole == UserRole.client,
+                        onTap: () => setState(() => _selectedRole = UserRole.client),
                       ),
                     ),
                   ],
-                ),
+                ).animate().fadeIn(delay: 800.ms),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
                 
-                // Register button
                 AuthButton(
-                  text: _isLoading ? 'Creating account...' : 'Sign Up',
+                  text: _isLoading ? 'Creating account...' : 'Create account',
                   onPressed: _handleRegister,
                   isLoading: _isLoading,
-                ),
+                ).animate().fadeIn(delay: 900.ms).scale(begin: const Offset(0.95, 0.95)),
                 
-                const SizedBox(height: 16),
-                
-                // Login link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Already have an account? "),
-                    TextButton(
-                      onPressed: () => context.go('/auth/login'),
-                      child: const Text('Sign In'),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleCard({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primary : colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : colorScheme.outline.withOpacity(0.1),
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: isSelected ? colorScheme.onPrimary : AppColors.textPrimaryLight,
+                fontWeight: FontWeight.bold,
+              ),
+            ),          ],
         ),
       ),
     );

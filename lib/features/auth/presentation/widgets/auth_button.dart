@@ -1,11 +1,10 @@
-// lib/features/auth/presentation/widgets/auth_button.dart
 import 'package:flutter/material.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isLoading;
-  
+
   const AuthButton({
     super.key,
     required this.text,
@@ -17,12 +16,6 @@ class AuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
       child: isLoading
           ? const SizedBox(
               height: 20,
@@ -34,7 +27,11 @@ class AuthButton extends StatelessWidget {
             )
           : Text(
               text,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
             ),
     );
   }

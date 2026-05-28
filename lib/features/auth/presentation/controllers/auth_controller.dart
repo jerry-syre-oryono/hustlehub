@@ -146,7 +146,11 @@ class AuthController extends StateNotifier<AuthState> {
     
     result.fold(
       (failure) => state = state.copyWith(isLoading: false, failure: failure),
-      (user) => state = state.copyWith(isLoading: false),
+      (user) => state = state.copyWith(
+        user: user,
+        isLoading: false,
+        isAuthenticated: true,
+      ),
     );
     
     return result;

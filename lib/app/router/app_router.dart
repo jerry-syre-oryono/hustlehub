@@ -38,12 +38,9 @@ class AppRouter {
         builder: (context, state) => const PostGigScreen(),
       ),
       GoRoute(
-        path: '/profile/:userId',
+        path: '/profile',
         name: 'profile',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ProfileScreen(userId: userId);
-        },
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/admin',

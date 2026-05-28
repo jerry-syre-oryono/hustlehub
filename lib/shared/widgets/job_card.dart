@@ -1,4 +1,3 @@
-// lib/shared/widgets/job_card.dart
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -17,152 +16,181 @@ class JobCard extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Images row
-              if (job.images.isNotEmpty)
-                SizedBox(
-                  height: 120,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: job.images.length > 3 ? 3 : job.images.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: job.images[index],
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey.shade200,
-                              child: const Center(child: CircularProgressIndicator()),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.error),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              
-              const SizedBox(height: 12),
-              
-              // Title and urgent badge
+              // Header: Client Info & Date
               Row(
                 children: [
-                  Expanded(
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: colorScheme.primary.withOpacity(0.1),
                     child: Text(
-                      job.title,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      job.clientName[0].toUpperCase(),
+                      style: TextStyle(
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          job.clientName,
+                          style: theme.textTheme.titleMedium?.copyWith(fontSize: 15),
+                        ),
+                        Text(
+                          _getTimeAgo(job.createdAt),
+                          style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
+                        ),
+                      ],
                     ),
                   ),
                   if (job.isUrgent)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(4),
+                        color: colorScheme.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
+                      child: Text(
                         'URGENT',
                         style: TextStyle(
-                          color: Colors.red,
+                          color: colorScheme.error,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
                 ],
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               
-              // Category and budget
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      job.category,
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'KES ${NumberFormat('#,###').format(job.budget)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+              // Job Title
+              Text(
+                job.title,
+                style: theme.textTheme.titleLarge?.copyWith(fontSize: 18),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               
               const SizedBox(height: 8),
               
-              // Location
+              // Location & Category
               Row(
                 children: [
-                  Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade600),
+                  Icon(Icons.location_on_rounded, size: 14, color: colorScheme.primary.withOpacity(0.7)),
                   const SizedBox(width: 4),
                   Text(
                     job.locationText,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(Icons.work_rounded, size: 14, color: colorScheme.primary.withOpacity(0.7)),
+                  const SizedBox(width: 4),
+                  Text(
+                    job.category,
+                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
                   ),
                 ],
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+
+              // Images
+              if (job.images.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: job.images.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: job.images[index],
+                              width: 140,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               
-              // Footer
+              // Footer: Budget & Applicants
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.person_outline, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text(
-                    job.clientName,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Budget',
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 11),
+                      ),
+                      Text(
+                        'KES ${NumberFormat('#,###').format(job.budget)}',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text(
-                    _getTimeAgo(job.createdAt),
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(Icons.person_add, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${job.applicationsCount} applicants',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.people_alt_rounded, size: 16, color: colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${job.applicationsCount} applicants',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -170,22 +198,15 @@ class JobCard extends StatelessWidget {
           ),
         ),
       ),
-    ).animate().fadeIn().slideY(begin: 0.1, end: 0);
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOut);
   }
   
   String _getTimeAgo(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
-    
-    if (difference.inDays > 7) {
-      return '${difference.inDays ~/ 7}w ago';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
+    if (difference.inDays > 7) return '${difference.inDays ~/ 7}w ago';
+    if (difference.inDays > 0) return '${difference.inDays}d ago';
+    if (difference.inHours > 0) return '${difference.inHours}h ago';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
+    return 'Just now';
   }
 }

@@ -9,8 +9,8 @@ class HustleHubApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'HustleHub',
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(context),
+      darkTheme: AppTheme.dark(context),
       routerConfig: AppRouter.router,
     );
   }

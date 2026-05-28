@@ -1,4 +1,3 @@
-// lib/features/search/presentation/widgets/search_filter_bar.dart
 import 'package:flutter/material.dart';
 
 class SearchFilterBar extends StatelessWidget {
@@ -19,23 +18,76 @@ class SearchFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          FilterChip(
-            label: Text(selectedCategory ?? 'All Categories'),
-            selected: selectedCategory != null,
-            onSelected: (_) {
-              // Show category picker dialog or similar
-            },
+          _buildFilterChip(
+            context,
+            selectedCategory ?? 'All Categories',
+            selectedCategory != null,
+            Icons.category_outlined,
+          ),
+          const SizedBox(width: 12),
+          _buildFilterChip(
+            context,
+            maxBudget == null ? 'Any Budget' : 'Up to KES ${maxBudget!.toInt()}',
+            maxBudget != null,
+            Icons.payments_outlined,
+          ),
+          const SizedBox(width: 12),
+          _buildFilterChip(
+            context,
+            'Top Rated',
+            false,
+            Icons.star_outline_rounded,
+          ),
+          const SizedBox(width: 12),
+          _buildFilterChip(
+            context,
+            'Near Me',
+            false,
+            Icons.near_me_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, String label, bool isSelected, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isSelected ? colorScheme.primary : colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected ? colorScheme.primary : colorScheme.outline.withOpacity(0.1),
+        ),
+        boxShadow: isSelected ? [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ] : null,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: isSelected ? Colors.white : colorScheme.onSurface.withOpacity(0.6),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: Text(maxBudget == null ? 'Any Budget' : 'Up to KES ${maxBudget!.toInt()}'),
-            selected: maxBudget != null,
-            onSelected: (_) {
-              // Show budget picker
-            },
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : colorScheme.onSurface.withOpacity(0.7),
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
+            ),
           ),
         ],
       ),

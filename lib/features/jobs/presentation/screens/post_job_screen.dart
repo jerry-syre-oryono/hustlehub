@@ -1,11 +1,9 @@
-// lib/features/jobs/presentation/screens/post_job_screen.dart
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:hustlehub/core/utils/image_picker_utils.dart';
-import 'package:hustlehub/core/utils/image_utils.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hustlehub/features/jobs/presentation/controllers/job_controller.dart';
+import 'package:hustlehub/features/auth/presentation/widgets/auth_button.dart';
 
 class PostJobScreen extends ConsumerStatefulWidget {
   const PostJobScreen({super.key});
@@ -20,307 +18,40 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
   final _descriptionController = TextEditingController();
   final _budgetController = TextEditingController();
   final _locationController = TextEditingController();
-  String _selectedCategory = 'Cleaning';
-  final List<XFile> _selectedImages = [];
-  bool _isSubmitting = false;
-  bool _isUploading = false;
-  
+  String _selectedCategory = 'General';
+
   final List<String> _categories = [
-    'Cleaning', 'Delivery', 'Tutoring', 'Handyman', 
-    'Gardening', 'Photography', 'Writing', 'Design',
-    'Programming', 'Moving', 'Event Planning', 'Other'
+    'General', 'Cleaning', 'Moving', 'Delivery', 'Repairs', 'Tutoring', 'Other'
   ];
-  
-  Future<void> _pickImages() async {
-    final images = await ImagePickerUtils.pickImages(maxCount: 3 - _selectedImages.length);
-    setState(() {
-      _selectedImages.addAll(images);
-    });
-  }
-  
-  Future<void> _removeImage(int index) async {
-    setState(() {
-      _selectedImages.removeAt(index);
-    });
-  }
-  
-  Future<void> _submitJob() async {
+
+  Future<void> _handlePost() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one image')),
-      );
-      return;
-    }
-    
-    setState(() {
-      _isSubmitting = true;
-      _isUploading = true;
-    });
-    
-    try {
-      // Prepare images for upload (compress)
-      final List<String> compressedPaths = [];
-      for (final image in _selectedImages) {
-        final compressed = await ImageUtils.compressImage(
-          image.path,
-          quality: 80,
-          maxSizeMB: 2,
+
+    final result = await ref.read(jobControllerProvider.notifier).createJob(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      category: _selectedCategory,
+      budget: double.parse(_budgetController.text),
+      locationText: _locationController.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(failure.message), backgroundColor: Theme.of(context).colorScheme.error),
         );
-        compressedPaths.add(compressed);
-      }
-      
-      if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-      });
-      
-      final result = await ref.read(jobControllerProvider.notifier).createJob(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        category: _selectedCategory,
-        budget: double.parse(_budgetController.text),
-        locationText: _locationController.text,
-        images: compressedPaths,
-      );
-      
-      if (!mounted) return;
-      setState(() => _isSubmitting = false);
-      
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(failure.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        },
-        (job) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Job posted successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-        _isUploading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Post a Job'),
-        actions: [
-          TextButton(
-            onPressed: _isSubmitting ? null : _submitJob,
-            child: _isSubmitting
-                ? (_isUploading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Posting...'))
-                : const Text(
-                    'Post',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Job Title *',
-                  hintText: 'e.g., Need house cleaning',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Title required';
-                  if (value.length < 5) return 'Title too short';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Category
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(
-                  labelText: 'Category *',
-                  border: OutlineInputBorder(),
-                ),
-                items: _categories.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _selectedCategory = value!),
-                validator: (value) => value == null ? 'Select category' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description *',
-                  hintText: 'Describe the job in detail...',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Description required';
-                  if (value.length < 20) return 'Please provide more details';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Budget
-              TextFormField(
-                controller: _budgetController,
-                decoration: const InputDecoration(
-                  labelText: 'Budget (KES) *',
-                  prefixText: 'KES ',
-                  hintText: 'e.g., 5000',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Budget required';
-                  final budget = double.tryParse(value);
-                  if (budget == null) return 'Invalid amount';
-                  if (budget <= 0) return 'Budget must be greater than 0';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Location
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location *',
-                  hintText: 'e.g., Nairobi CBD',
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Location required';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Images
-              const Text(
-                'Images (max 3, 2MB each) *',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ..._selectedImages.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final image = entry.value;
-                    return Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(image.path),
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () => _removeImage(index),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                size: 20,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                  if (_selectedImages.length < 3)
-                    GestureDetector(
-                      onTap: _pickImages,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate_outlined, size: 40),
-                            SizedBox(height: 4),
-                            Text('Add Image'),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              
-              // Submit button
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitJob,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: Text(_isSubmitting ? 'Posting Job...' : 'Post Job'),
-              ),
-            ],
-          ),
-        ),
-      ),
+      },
+      (job) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Job posted successfully!'), backgroundColor: Colors.green),
+        );
+        context.pop();
+      },
     );
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -328,5 +59,124 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
     _budgetController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Post a Job'),
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => context.pop(),
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Job Details', style: theme.textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text('Fill in the information below to find the right person.', style: theme.textTheme.bodyMedium),
+              
+              const SizedBox(height: 32),
+              
+              _buildFieldLabel('Title'),
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(hintText: 'e.g. Need a house cleaner'),
+                validator: (value) => value == null || value.isEmpty ? 'Title required' : null,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              _buildFieldLabel('Category'),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(),
+                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                onChanged: (v) => setState(() => _selectedCategory = v!),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              _buildFieldLabel('Description'),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 4,
+                decoration: const InputDecoration(hintText: 'Describe what needs to be done...'),
+                validator: (value) => value == null || value.isEmpty ? 'Description required' : null,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFieldLabel('Budget (KES)'),
+                        TextFormField(
+                          controller: _budgetController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(hintText: '0.00'),
+                          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFieldLabel('Location'),
+                        TextFormField(
+                          controller: _locationController,
+                          decoration: const InputDecoration(hintText: 'Nairobi, Kenya'),
+                          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 48),
+              
+              AuthButton(
+                text: 'Post Job',
+                onPressed: _handlePost,
+                isLoading: ref.watch(jobControllerProvider).isLoading,
+              ).animate().fadeIn(delay: 400.ms).scale(),
+              
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
   }
 }
